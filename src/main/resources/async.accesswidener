@@ -25,3 +25,4 @@ accessible field net/minecraft/server/world/ServerEntityManager entityUuids Ljav
 accessible field net/minecraft/server/world/ServerEntityManager cache Lnet/minecraft/world/entity/SectionedEntityCache;
 
 accessible class net/minecraft/entity/passive/DolphinEntity$PlayWithItemsGoal
+accessible class net/minecraft/village/VillagerGossips$Reputation

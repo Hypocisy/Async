@@ -8,27 +8,36 @@ import net.minecraft.world.entity.EntityLike;
 import net.minecraft.world.entity.EntityTrackingSection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
+
+import java.util.concurrent.locks.ReentrantLock;
 
 @Mixin(ServerEntityManager.Listener.class)
 public abstract class ServerEntityManagerMixin<T extends EntityLike> implements AutoCloseable {
     @Shadow
     private EntityTrackingSection<T> section;
+    @Unique
+    private static final ReentrantLock lock = new ReentrantLock();
 
     @WrapMethod(method = "updateEntityPosition")
     private void updateEntityPosition(Operation<Void> original) {
+        lock.lock();
         try {
             original.call();
-        } catch (Throwable ignored) {
+        } finally {
+            lock.unlock();
         }
     }
 
     @WrapMethod(method = "remove")
     private void remove(Entity.RemovalReason reason, Operation<Void> original) {
+        lock.lock();
         try {
             original.call(reason);
-        } catch (Throwable ignored) {
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -43,5 +52,4 @@ public abstract class ServerEntityManagerMixin<T extends EntityLike> implements 
         this.section.remove(entity);
         return true;
     }
-
 }
