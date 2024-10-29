@@ -32,7 +32,6 @@
     "utils.UtilMixin",
     "world.ChainRestrictedNeighborUpdaterMixin",
     "world.ChunkHolderMixin",
-    "world.ChunkMixin",
     "world.ChunkTicketManagerMixin",
     "world.LevelPropagatorMixin",
     "world.PendingUpdateQueueMixin",
