@@ -13,6 +13,7 @@
     "entity.EntityMixin",
     "entity.FoxEntityMixin",
     "entity.GoalSelectorMixin",
+    "entity.HoldTradeOffersTaskMixin",
     "entity.ItemEntityMixin",
     "entity.LivingEntityMixin",
     "entity.NearestLivingEntitiesSensorMixin",
