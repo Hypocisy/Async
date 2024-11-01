@@ -110,7 +110,6 @@ public class ParallelProcessor {
             currentEnts.incrementAndGet();
 
             final ISerDesFilter filter = SerDesRegistry.getFilter(SerDesHookTypes.EntityTick, entity.getClass());
-
             if (filter != null) {
                 filter.serialise(
                         () -> tickConsumer.accept(entity),

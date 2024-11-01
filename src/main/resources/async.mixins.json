@@ -31,7 +31,6 @@
     "server.MinecraftServerMixin",
     "utils.LockHelperMixin",
     "utils.SyncAllMixin",
-    "utils.TypeFilterableListMixin",
     "utils.UtilMixin",
     "world.ChainRestrictedNeighborUpdaterMixin",
     "world.ChunkHolderMixin",

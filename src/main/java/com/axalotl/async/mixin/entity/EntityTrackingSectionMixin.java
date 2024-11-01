@@ -32,28 +32,16 @@ public abstract class EntityTrackingSectionMixin<T extends EntityLike> {
         this.status = status;
     }
 
-    /**
-     * @author AxalotL
-     * @reason Fix
-     */
     @Overwrite
     public void add(T entity) {
         this.collection.add(entity);
     }
 
-    /**
-     * @author Axalotl
-     * @reason Fix
-     */
     @Overwrite
     public boolean remove(T entity) {
         return this.collection.remove(entity);
     }
 
-    /**
-     * @author Axalotl
-     * @reason Fix
-     */
     @Overwrite
     public LazyIterationConsumer.NextIteration forEach(Box box, LazyIterationConsumer<T> consumer) {
         for (T entityLike : this.collection) {
@@ -65,10 +53,6 @@ public abstract class EntityTrackingSectionMixin<T extends EntityLike> {
         return LazyIterationConsumer.NextIteration.CONTINUE;
     }
 
-    /**
-     * @author AxalotL
-     * @reason Fix
-     */
     @Overwrite
     public <U extends T> LazyIterationConsumer.NextIteration forEach(TypeFilter<T, U> type, Box box, LazyIterationConsumer<? super U> consumer) {
         Collection<? extends T> filteredCollection = this.collection.stream()
@@ -87,37 +71,21 @@ public abstract class EntityTrackingSectionMixin<T extends EntityLike> {
         return LazyIterationConsumer.NextIteration.CONTINUE;
     }
 
-    /**
-     * @author AxalotL
-     * @reason Fix
-     */
     @Overwrite
     public boolean isEmpty() {
         return this.collection.isEmpty();
     }
 
-    /**
-     * @author AxalotL
-     * @reason Fix
-     */
     @Overwrite
     public Stream<T> stream() {
         return this.collection.stream();
     }
 
-    /**
-     * @author AxalotL
-     * @reason Fix
-     */
     @Overwrite
     public EntityTrackingStatus getStatus() {
         return this.status;
     }
 
-    /**
-     * @author AxalotL
-     * @reason Fix
-     */
     @Overwrite
     public EntityTrackingStatus swapStatus(EntityTrackingStatus status) {
         EntityTrackingStatus entityTrackingStatus = this.status;
@@ -125,14 +93,9 @@ public abstract class EntityTrackingSectionMixin<T extends EntityLike> {
         return entityTrackingStatus;
     }
 
-    /**
-     * @author AxalotL
-     * @reason Fix
-     */
     @Overwrite
     @Debug
     public int size() {
         return this.collection.size();
     }
-
 }

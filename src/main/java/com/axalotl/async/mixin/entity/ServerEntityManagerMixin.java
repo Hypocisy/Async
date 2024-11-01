@@ -22,7 +22,7 @@ public abstract class ServerEntityManagerMixin<T extends EntityLike> implements 
     private static final ReentrantLock lock = new ReentrantLock();
 
     @WrapMethod(method = "updateEntityPosition")
-    private synchronized void updateEntityPosition(Operation<Void> original) {
+    private void updateEntityPosition(Operation<Void> original) {
         lock.lock();
         try {
             original.call();
@@ -32,7 +32,7 @@ public abstract class ServerEntityManagerMixin<T extends EntityLike> implements 
     }
 
     @WrapMethod(method = "remove")
-    private synchronized void remove(Entity.RemovalReason reason, Operation<Void> original) {
+    private void remove(Entity.RemovalReason reason, Operation<Void> original) {
         lock.lock();
         try {
             original.call(reason);

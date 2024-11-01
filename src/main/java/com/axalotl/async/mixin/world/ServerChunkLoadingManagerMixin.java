@@ -22,10 +22,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 @Mixin(value = ServerChunkLoadingManager.class, priority = 1500)
 public abstract class ServerChunkLoadingManagerMixin extends VersionedChunkStorage implements ChunkHolder.PlayersWatchingChunkProvider, ChunkLoadingManager {
-
-    @Unique
-    private static final ReentrantLock lock = new ReentrantLock();
-
     @Shadow
     @Final
     @Mutable
