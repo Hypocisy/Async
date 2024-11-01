@@ -16,7 +16,7 @@
   },
   "license": "GPLv3",
   "icon": "assets/async/icon.png",
-  "environment": "*",
+  "environment": "server",
   "entrypoints": {
     "preLaunch": [
       "com.axalotl.async.parallelised.fastutil.sync.SyncFuTransformer"
@@ -49,5 +49,9 @@
     }
   },
   "suggests": {
+  },
+  "breaks": {
+    "sepals": "*",
+    "moonrise": "*"
   }
 }

@@ -29,9 +29,8 @@ public abstract class ServerWorldMixin implements StructureWorldAccess {
     @Unique
     ConcurrentLinkedDeque<BlockEvent> syncedBlockEventCLinkedQueue = new ConcurrentLinkedDeque<>();
     @Shadow
-    @Final
     @Mutable
-    Set<MobEntity> loadedMobs = ConcurrentCollections.newHashSet();
+    final Set<MobEntity> loadedMobs = ConcurrentCollections.newHashSet();
     @Unique
     ServerWorld thisWorld = (ServerWorld) (Object) this;
 
