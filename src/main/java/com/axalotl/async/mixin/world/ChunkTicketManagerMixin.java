@@ -10,7 +10,6 @@ import java.util.Set;
 
 @Mixin(ChunkTicketManager.class)
 public abstract class ChunkTicketManagerMixin {
-
     @Shadow
     @Final
     @Mutable

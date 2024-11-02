@@ -51,6 +51,7 @@
   "suggests": {
   },
   "breaks": {
+    "vmp": "*",
     "sepals": "*",
     "moonrise": "*"
   }

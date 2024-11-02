@@ -26,7 +26,6 @@ import java.util.concurrent.CompletableFuture;
 
 @Mixin(value = ServerChunkManager.class, priority = 1500)
 public abstract class ServerChunkManagerMixin extends ChunkManager {
-
     @Shadow
     @Final
     public Thread serverThread;
