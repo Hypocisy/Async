@@ -18,7 +18,6 @@ import org.spongepowered.asm.mixin.*;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Mixin(value = ServerChunkLoadingManager.class, priority = 1500)
 public abstract class ServerChunkLoadingManagerMixin extends VersionedChunkStorage implements ChunkHolder.PlayersWatchingChunkProvider, ChunkLoadingManager {
