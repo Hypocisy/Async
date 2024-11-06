@@ -16,7 +16,9 @@ import net.minecraft.world.event.GameEvent;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Collection;
 import java.util.Set;
@@ -27,16 +29,19 @@ import java.util.function.Predicate;
 @Mixin(value = ServerWorld.class, priority = 2000)
 public abstract class ServerWorldMixin implements StructureWorldAccess {
     @Unique
-    ConcurrentLinkedDeque<BlockEvent> syncedBlockEventCLinkedQueue = new ConcurrentLinkedDeque<>();
+    ConcurrentLinkedDeque<BlockEvent> syncedBlockEventCLinkedQueue;
     @Shadow
     @Mutable
     final Set<MobEntity> loadedMobs = ConcurrentCollections.newHashSet();
-    @Unique
-    ServerWorld thisWorld = (ServerWorld) (Object) this;
+
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void init(CallbackInfo ci) {
+        syncedBlockEventCLinkedQueue = new ConcurrentLinkedDeque<>();
+    }
 
     @Redirect(method = "method_31420", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;tickEntity(Ljava/util/function/Consumer;Lnet/minecraft/entity/Entity;)V"))
     private void overwriteEntityTicking(ServerWorld instance, Consumer consumer, Entity entity) {
-        ParallelProcessor.callEntityTick(consumer, entity, thisWorld);
+        ParallelProcessor.callEntityTick(consumer, entity);
     }
 
     @Redirect(method = "addSyncedBlockEvent", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet;add(Ljava/lang/Object;)Z"))
