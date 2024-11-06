@@ -22,21 +22,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @Mixin(value = ServerWorld.class, priority = 2000)
 public abstract class ServerWorldMixin implements StructureWorldAccess {
     @Unique
-    ConcurrentLinkedDeque<BlockEvent> syncedBlockEventCLinkedQueue;
+    ConcurrentLinkedQueue<BlockEvent> syncedBlockEventQueue;
+
     @Shadow
     @Mutable
     final Set<MobEntity> loadedMobs = ConcurrentCollections.newHashSet();
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void init(CallbackInfo ci) {
-        syncedBlockEventCLinkedQueue = new ConcurrentLinkedDeque<>();
+        syncedBlockEventQueue = new ConcurrentLinkedQueue<>();
     }
 
     @Redirect(method = "method_31420", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ServerWorld;tickEntity(Ljava/util/function/Consumer;Lnet/minecraft/entity/Entity;)V"))
@@ -46,32 +47,31 @@ public abstract class ServerWorldMixin implements StructureWorldAccess {
 
     @Redirect(method = "addSyncedBlockEvent", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet;add(Ljava/lang/Object;)Z"))
     private boolean overwriteQueueAdd(ObjectLinkedOpenHashSet<BlockEvent> objectLinkedOpenHashSet, Object object) {
-        return syncedBlockEventCLinkedQueue.add((BlockEvent) object);
+        return syncedBlockEventQueue.offer((BlockEvent) object);
     }
 
     @Redirect(method = "clearUpdatesInArea", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet;removeIf(Ljava/util/function/Predicate;)Z"))
     private boolean overwriteQueueRemoveIf(ObjectLinkedOpenHashSet<BlockEvent> objectLinkedOpenHashSet, Predicate<BlockEvent> filter) {
-        return syncedBlockEventCLinkedQueue.removeIf(filter);
+        return syncedBlockEventQueue.removeIf(filter);
     }
 
     @Redirect(method = "processSyncedBlockEvents", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet;isEmpty()Z"))
     private boolean overwriteEmptyCheck(ObjectLinkedOpenHashSet<BlockEvent> objectLinkedOpenHashSet) {
-        return syncedBlockEventCLinkedQueue.isEmpty();
+        return syncedBlockEventQueue.isEmpty();
     }
 
     @Redirect(method = "processSyncedBlockEvents", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet;removeFirst()Ljava/lang/Object;"))
     private Object overwriteQueueRemoveFirst(ObjectLinkedOpenHashSet<BlockEvent> objectLinkedOpenHashSet) {
-        return syncedBlockEventCLinkedQueue.removeFirst();
+        return syncedBlockEventQueue.poll();
     }
 
     @Redirect(method = "processSyncedBlockEvents", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet;addAll(Ljava/util/Collection;)Z"))
     private boolean overwriteQueueAddAll(ObjectLinkedOpenHashSet<BlockEvent> instance, Collection<? extends BlockEvent> c) {
-        return syncedBlockEventCLinkedQueue.addAll(c);
+        return syncedBlockEventQueue.addAll(c);
     }
 
     @Redirect(method = "updateListeners", at = @At(value = "FIELD", target = "Lnet/minecraft/server/world/ServerWorld;duringListenerUpdate:Z", opcode = Opcodes.PUTFIELD))
     private void skipSendBlockUpdatedCheck(ServerWorld instance, boolean value) {
-
     }
 
     @WrapMethod(method = "emitGameEvent")

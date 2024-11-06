@@ -1,16 +1,8 @@
 package com.axalotl.async.mixin.world;
 
-import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import net.minecraft.server.world.ChunkHolder;
-import net.minecraft.server.world.OptionalChunk;
-import net.minecraft.server.world.ServerChunkLoadingManager;
-import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.world.*;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkManager;
-import net.minecraft.world.chunk.ChunkStatus;
-import net.minecraft.world.chunk.WrapperProtoChunk;
+import net.minecraft.world.chunk.*;
 import org.jetbrains.annotations.Nullable;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -28,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 public abstract class ServerChunkManagerMixin extends ChunkManager {
     @Shadow
     @Final
-    public Thread serverThread;
+    Thread serverThread;
 
     @Shadow
     public abstract @Nullable ChunkHolder getChunkHolder(long pos);
@@ -42,9 +34,9 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
         return Thread.currentThread();
     }
 
-    @WrapMethod(method = "putInCache")
-    private synchronized void syncPutInCache(long pos, Chunk chunk, ChunkStatus status, Operation<Void> original) {
-        original.call(pos, chunk, status);
+    @Redirect(method = "tickChunks", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/world/ChunkHolder;getWorldChunk()Lnet/minecraft/world/chunk/WorldChunk;"))
+    private WorldChunk includeAccessibleChunks(ChunkHolder instance) {
+        return instance.getAccessibleFuture().getNow(ChunkHolder.UNLOADED_WORLD_CHUNK).orElse(null);
     }
 
     @Inject(method = "getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", at = @At("HEAD"), cancellable = true)
@@ -52,12 +44,11 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
         if (Thread.currentThread() != this.serverThread) {
             final ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(x, z));
             if (holder != null) {
-                final CompletableFuture<OptionalChunk<Chunk>> future = holder.load(leastStatus, this.chunkLoadingManager); // thread-safe in new system
+                final CompletableFuture<OptionalChunk<Chunk>> future = holder.load(leastStatus, this.chunkLoadingManager);
                 Chunk chunk = future.getNow(ChunkHolder.UNLOADED).orElse(null);
                 if (chunk instanceof WrapperProtoChunk readOnlyChunk) chunk = readOnlyChunk.getWrappedChunk();
                 if (chunk != null) {
                     cir.setReturnValue(chunk);
-                    return;
                 }
             }
         }

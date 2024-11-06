@@ -11,6 +11,17 @@ import net.minecraft.world.event.listener.SimpleGameEventDispatcher;
 import net.minecraft.world.tick.ChunkTickScheduler;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(value = {PathMinHeap.class, ChunkTickScheduler.class, LevelPropagator.class, EntityNavigation.class, CheckedRandom.class, SimpleGameEventDispatcher.class, AbstractCriterion.class, WardenAngerManager.class, WorldBorder.class})
+
+@Mixin(value = {
+        PathMinHeap.class,
+        ChunkTickScheduler.class,
+        LevelPropagator.class,
+        EntityNavigation.class,
+        CheckedRandom.class,
+        SimpleGameEventDispatcher.class,
+        AbstractCriterion.class,
+        WardenAngerManager.class,
+        WorldBorder.class
+})
 public class SyncAllMixin {
 }
