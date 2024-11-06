@@ -1,5 +1,6 @@
 package com.axalotl.async.commands;
 
+import com.axalotl.async.config.AsyncConfig;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.axalotl.async.ParallelProcessor;
 import net.minecraft.server.command.ServerCommandSource;
@@ -57,7 +58,6 @@ public class StatsCommand {
             try {
                 while (true) {
                     Thread.sleep(10);
-
                     if (resetThreadStats) {
                         maxThreads = new int[samples];
                         currentSteps = 0;
@@ -65,21 +65,24 @@ public class StatsCommand {
                         liveValues = 0;
                         resetThreadStats = false;
                     }
+                    if (!AsyncConfig.disabled) {
+                        if (++currentSteps % stepsPer == 0) {
+                            currentPos = (currentPos + 1) % samples;
+                            liveValues = Math.min(liveValues + 1, samples);
+                            maxThreads[currentPos] = 0;
+                        }
+                        int entities = ParallelProcessor.currentEnts.get();
+                        maxThreads[currentPos] = Math.max(maxThreads[currentPos], entities);
 
-                    if (++currentSteps % stepsPer == 0) {
-                        currentPos = (currentPos + 1) % samples;
-                        liveValues = Math.min(liveValues + 1, samples);
-                        maxThreads[currentPos] = 0;
+                        if (++entityCurrentSteps % stepsPer == 0) {
+                            entityCurrentPos = (entityCurrentPos + 1) % samples;
+                            entityLiveValues = Math.min(entityLiveValues + 1, samples);
+                            maxEntities[entityCurrentPos] = 0;
+                        }
+                        maxEntities[entityCurrentPos] = Math.max(maxEntities[entityCurrentPos], entities);
+                    } else {
+                        resetAll();
                     }
-                    int entities = ParallelProcessor.currentEnts.get();
-                    maxThreads[currentPos] = Math.max(maxThreads[currentPos], entities);
-
-                    if (++entityCurrentSteps % stepsPer == 0) {
-                        entityCurrentPos = (entityCurrentPos + 1) % samples;
-                        entityLiveValues = Math.min(entityLiveValues + 1, samples);
-                        maxEntities[entityCurrentPos] = 0;
-                    }
-                    maxEntities[entityCurrentPos] = Math.max(maxEntities[entityCurrentPos], entities);
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

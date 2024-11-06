@@ -42,8 +42,8 @@ public class AsyncConfig {
         CONFIG.set("paraMax", paraMax);
         CONFIG.set("virtualThreads", virtualThreads);
         CONFIG.set("disableTNT", disableTNT);
-        LOGGER.info("Configuration saved successfully.");
         CONFIG.save();
+        LOGGER.info("Configuration saved successfully.");
     }
 
     private static void loadConfigValues() {

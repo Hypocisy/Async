@@ -17,6 +17,7 @@ public class ConfigCommand {
         return root.then(literal("config")
                 .then(CommandManager.literal("toggle").requires(cmdSrc -> cmdSrc.hasPermissionLevel(2)).executes(cmdCtx -> {
                     AsyncConfig.disabled = !AsyncConfig.disabled;
+                    AsyncConfig.saveConfig();
                     MutableText message = prefix.copy().append(Text.literal("Async is now ").styled(style -> style.withColor(Formatting.WHITE)))
                             .append(Text.literal(AsyncConfig.disabled ? "disabled" : "enabled").styled(style -> style.withColor(Formatting.GREEN)));
                     cmdCtx.getSource().sendFeedback(() -> message, true);
