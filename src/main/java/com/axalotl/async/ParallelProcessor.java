@@ -6,11 +6,9 @@ import lombok.Setter;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.entity.TntEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.vehicle.*;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -32,8 +30,6 @@ public class ParallelProcessor {
     private static final Map<String, Set<Thread>> mcThreadTracker = new ConcurrentHashMap<>();
     public static final Map<Class<? extends Entity>, Boolean> modEntityCache = new ConcurrentHashMap<>();
     private static final Set<Class<?>> specialEntities = Set.of(
-            PlayerEntity.class,
-            ServerPlayerEntity.class,
             FallingBlockEntity.class
     );
 

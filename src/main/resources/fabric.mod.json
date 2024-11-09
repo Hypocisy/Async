@@ -41,8 +41,8 @@
   "custom": {
     "lithium:options": {
       "entity.inactive_navigations": false,
-      "chunk.entity_class_groups": false
-//      "world.chunk_access": false,
+      "chunk.entity_class_groups": false,
+      "world.chunk_access": false
 //      "entity": false,
 //      "collections": false,
 //      "alloc.entity_tracker": false,
