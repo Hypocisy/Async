@@ -1,5 +1,7 @@
 package com.axalotl.async.mixin.world;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.server.world.*;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.chunk.*;
@@ -32,6 +34,11 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
     @Redirect(method = {"getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", "getWorldChunk"}, at = @At(value = "FIELD", target = "Lnet/minecraft/server/world/ServerChunkManager;serverThread:Ljava/lang/Thread;", opcode = Opcodes.GETFIELD))
     private Thread overwriteServerThread(ServerChunkManager mgr) {
         return Thread.currentThread();
+    }
+
+    @WrapMethod(method = "putInCache")
+    private synchronized void syncPutInCache(long pos, Chunk chunk, ChunkStatus status, Operation<Void> original) {
+        original.call(pos, chunk, status);
     }
 
     @Inject(method = "getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", at = @At("HEAD"), cancellable = true)

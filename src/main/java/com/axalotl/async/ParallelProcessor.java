@@ -6,9 +6,11 @@ import lombok.Setter;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.entity.TntEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.vehicle.*;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,7 +32,9 @@ public class ParallelProcessor {
     private static final Map<String, Set<Thread>> mcThreadTracker = new ConcurrentHashMap<>();
     public static final Map<Class<? extends Entity>, Boolean> modEntityCache = new ConcurrentHashMap<>();
     private static final Set<Class<?>> specialEntities = Set.of(
-            FallingBlockEntity.class
+            FallingBlockEntity.class,
+            PlayerEntity.class,
+            ServerPlayerEntity.class
     );
 
     public static void setupThreadPool(int parallelism) {
@@ -109,8 +113,10 @@ public class ParallelProcessor {
 
     private static void performAsyncEntityTick(Consumer<Entity> tickConsumer, Entity entity) {
         try {
-            currentEnts.incrementAndGet();
-            tickConsumer.accept(entity);
+            server.execute(() -> {
+                currentEnts.incrementAndGet();
+                tickConsumer.accept(entity);
+            });
         } catch (Exception e) {
             LOGGER.error("Error ticking entity {} asynchronously",
                     entity.getType().getName(),
