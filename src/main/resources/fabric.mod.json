@@ -16,7 +16,7 @@
   },
   "license": "GPLv3",
   "icon": "assets/async/icon.png",
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "preLaunch": [
       "com.axalotl.async.parallelised.fastutil.sync.SyncFuTransformer"
