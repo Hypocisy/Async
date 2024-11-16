@@ -30,7 +30,6 @@ public class ParallelProcessor {
     public static final Queue<CompletableFuture<Void>> entityTickFutures = new ConcurrentLinkedQueue<>();
     public static final Set<Class<?>> blacklistedClasses = ConcurrentHashMap.newKeySet();
     private static final Map<String, Set<Thread>> mcThreadTracker = new ConcurrentHashMap<>();
-    public static final Map<Class<? extends Entity>, Boolean> modEntityCache = new ConcurrentHashMap<>();
     private static final Set<Class<?>> specialEntities = Set.of(
             FallingBlockEntity.class,
             PlayerEntity.class,
@@ -81,6 +80,7 @@ public class ParallelProcessor {
                 tickPool
         );
         entityTickFutures.add(future);
+        entityTickFutures.clear();
     }
 
     private static boolean shouldTickSynchronously(Entity entity) {
@@ -89,8 +89,7 @@ public class ParallelProcessor {
                 specialEntities.contains(entity.getClass()) ||
                 tickPortalSynchronously(entity) ||
                 entity instanceof AbstractMinecartEntity ||
-                (AsyncConfig.disableTNT && entity instanceof TntEntity) ||
-                isModEntity(entity);
+                (AsyncConfig.disableTNT && entity instanceof TntEntity);
     }
 
     private static boolean tickPortalSynchronously(Entity entity) {
@@ -113,10 +112,8 @@ public class ParallelProcessor {
 
     private static void performAsyncEntityTick(Consumer<Entity> tickConsumer, Entity entity) {
         try {
-            server.execute(() -> {
-                currentEnts.incrementAndGet();
-                tickConsumer.accept(entity);
-            });
+            currentEnts.incrementAndGet();
+            tickConsumer.accept(entity);
         } catch (Exception e) {
             LOGGER.error("Error ticking entity {} asynchronously",
                     entity.getType().getName(),
@@ -141,12 +138,6 @@ public class ParallelProcessor {
                 entityTickFutures.clear();
             }
         }
-    }
-
-    private static boolean isModEntity(Entity entityIn) {
-        return modEntityCache.computeIfAbsent(entityIn.getClass(), clazz ->
-                !clazz.getPackageName().startsWith("net.minecraft")
-        );
     }
 
     public static void stop() {
