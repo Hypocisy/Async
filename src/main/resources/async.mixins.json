@@ -35,6 +35,7 @@
     "utils.SyncAllMixin",
     "utils.TypeFilterableListMixin",
     "utils.UtilMixin",
+    "utils.WeightedListMixin",
     "world.ChainRestrictedNeighborUpdaterMixin",
     "world.ChunkHolderMixin",
     "world.ChunkTicketManagerMixin",
