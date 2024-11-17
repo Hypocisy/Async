@@ -23,6 +23,7 @@
     "entity.PandaEntityMixin",
     "entity.PathNodeNavigatorMixin",
     "entity.PiglinEntityMixin",
+    "entity.PlayWithVillagerBabiesTaskMixin",
     "entity.RaiderEntityMixin",
     "entity.SectionedEntityCacheMixin",
     "entity.ServerEntityManagerMixin",
