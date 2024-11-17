@@ -1,5 +1,7 @@
 package com.axalotl.async.mixin.entity;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.util.TypeFilter;
 import net.minecraft.util.annotation.Debug;
 import net.minecraft.util.function.LazyIterationConsumer;
@@ -8,91 +10,55 @@ import net.minecraft.world.entity.EntityLike;
 import net.minecraft.world.entity.EntityTrackingSection;
 import net.minecraft.world.entity.EntityTrackingStatus;
 import org.spongepowered.asm.mixin.*;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Collection;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
-@Mixin(value = EntityTrackingSection.class, priority = 1500)
+@Mixin(value = EntityTrackingSection.class)
 public class EntityTrackingSectionMixin<T extends EntityLike> {
 
-    @Unique
-    private CopyOnWriteArrayList<T> collection;
-
-    @Shadow
-    private EntityTrackingStatus status;
-
-    @Inject(method = "<init>(Ljava/lang/Class;Lnet/minecraft/world/entity/EntityTrackingStatus;)V", at = @At("RETURN"))
-    private void onInit(Class<T> entityClass, EntityTrackingStatus status, CallbackInfo ci) {
-        this.collection = new CopyOnWriteArrayList<>();
+    @WrapMethod(method = "remove")
+    public synchronized boolean add(T entity, Operation<Boolean> original) {
+        return original.call(entity);
     }
 
-    @Overwrite
-    public void add(T entity) {
-        this.collection.add(entity);
+    @WrapMethod(method = "remove")
+    public synchronized boolean remove(T entity, Operation<Boolean> original) {
+        return original.call(entity);
     }
 
-    @Overwrite
-    public boolean remove(T entity) {
-        return this.collection.remove(entity);
+    @WrapMethod(method = "forEach(Lnet/minecraft/util/math/Box;Lnet/minecraft/util/function/LazyIterationConsumer;)Lnet/minecraft/util/function/LazyIterationConsumer$NextIteration;")
+    public synchronized LazyIterationConsumer.NextIteration forEach(Box box, LazyIterationConsumer<T> consumer, Operation<LazyIterationConsumer.NextIteration> original) {
+        return original.call(box, consumer);
     }
 
-    @Overwrite
-    public LazyIterationConsumer.NextIteration forEach(Box box, LazyIterationConsumer<T> consumer) {
-        for (T entityLike : this.collection) {
-            if (entityLike.getBoundingBox().intersects(box) && consumer.accept(entityLike).shouldAbort()) {
-                return LazyIterationConsumer.NextIteration.ABORT;
-            }
-        }
-        return LazyIterationConsumer.NextIteration.CONTINUE;
+    @WrapMethod(method = "forEach(Lnet/minecraft/util/TypeFilter;Lnet/minecraft/util/math/Box;Lnet/minecraft/util/function/LazyIterationConsumer;)Lnet/minecraft/util/function/LazyIterationConsumer$NextIteration;")
+    public synchronized  <U extends T> LazyIterationConsumer.NextIteration forEach(TypeFilter<T, U> type, Box box, LazyIterationConsumer<? super U> consumer, Operation<LazyIterationConsumer.NextIteration> original) {
+       return original.call(type, box, consumer);
     }
 
-    @Overwrite
-    public <U extends T> LazyIterationConsumer.NextIteration forEach(TypeFilter<T, U> type, Box box, LazyIterationConsumer<? super U> consumer) {
-        Collection<? extends T> collection = this.collection.stream()
-                .filter(e -> type.getBaseClass().isInstance(e))
-                .toList();
-        if (collection.isEmpty()) {
-            return LazyIterationConsumer.NextIteration.CONTINUE;
-        } else {
-            for (T entityLike : collection) {
-                U entityLike2 = type.downcast(entityLike);
-                if (entityLike2 != null && entityLike.getBoundingBox().intersects(box) && consumer.accept(entityLike2).shouldAbort()) {
-                    return LazyIterationConsumer.NextIteration.ABORT;
-                }
-            }
-        }
-        return LazyIterationConsumer.NextIteration.CONTINUE;
-    }
-
-    @Overwrite
-    public boolean isEmpty() {
-        return this.collection.isEmpty();
+    @WrapMethod(method = "isEmpty")
+    public synchronized boolean isEmpty(Operation<Boolean> original) {
+        return original.call();
     }
 
     @Debug
-    @Overwrite
-    public int size() {
-        return this.collection.size();
+    @WrapMethod(method = "size")
+    public synchronized int size(Operation<Integer> original) {
+        return original.call();
     }
 
-    @Overwrite
-    public Stream<T> stream() {
-        return this.collection.stream();
+    @WrapMethod(method = "stream")
+    public synchronized Stream<T> stream(Operation<Stream<T>> original) {
+        return original.call();
     }
 
-    @Overwrite
-    public EntityTrackingStatus getStatus() {
-        return this.status;
+    @WrapMethod(method = "getStatus")
+    public synchronized EntityTrackingStatus getStatus(Operation<EntityTrackingStatus> original) {
+        return original.call();
     }
 
-    @Overwrite
-    public EntityTrackingStatus swapStatus(EntityTrackingStatus status) {
-        EntityTrackingStatus entityTrackingStatus = this.status;
-        this.status = status;
-        return entityTrackingStatus;
+    @WrapMethod(method = "swapStatus")
+    public synchronized EntityTrackingStatus swapStatus(EntityTrackingStatus status, Operation<EntityTrackingStatus> original) {
+        return original.call(status);
     }
 }
