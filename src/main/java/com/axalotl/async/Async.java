@@ -12,12 +12,11 @@ import org.apache.logging.log4j.Logger;
 
 public class Async implements ModInitializer {
     public static final Logger LOGGER = LogManager.getLogger();
-    public static Boolean c2me;
+    public static Boolean c2me = FabricLoader.getInstance().isModLoaded("c2me");;
 
     @Override
     public void onInitialize() {
         LOGGER.info("Initializing Async...");
-        c2me = FabricLoader.getInstance().isModLoaded("c2me");
         AsyncConfig.init();
         StatsCommand.runStatsThread();
         LOGGER.info("Async Setting up thread-pool...");

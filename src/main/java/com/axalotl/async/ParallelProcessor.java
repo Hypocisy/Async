@@ -141,7 +141,6 @@ public class ParallelProcessor {
 
     public static void stop() {
         tickPool.shutdown();
-
         try {
             if (!tickPool.awaitTermination(60, TimeUnit.SECONDS)) {
                 tickPool.shutdownNow();
