@@ -80,7 +80,6 @@ public class ParallelProcessor {
                 tickPool
         );
         entityTickFutures.add(future);
-        entityTickFutures.clear();
     }
 
     private static boolean shouldTickSynchronously(Entity entity) {
