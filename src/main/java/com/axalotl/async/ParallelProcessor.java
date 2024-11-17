@@ -27,7 +27,7 @@ public class ParallelProcessor {
     public static AtomicInteger currentEnts = new AtomicInteger();
     private static final AtomicInteger ThreadPoolID = new AtomicInteger();
     public static ExecutorService tickPool;
-    public static final Queue<CompletableFuture<Void>> entityTickFutures = new ConcurrentLinkedQueue<>();
+    public static final Queue<CompletableFuture<Void>> taskQueue = new ConcurrentLinkedQueue<>();
     public static final Set<UUID> blacklistedEntity = ConcurrentHashMap.newKeySet();
     private static final Map<String, Set<Thread>> mcThreadTracker = new ConcurrentHashMap<>();
     private static final Set<Class<?>> specialEntities = Set.of(
@@ -57,7 +57,6 @@ public class ParallelProcessor {
         }
     }
 
-
     public static void regThread(String poolName, Thread thread) {
         mcThreadTracker.computeIfAbsent(poolName, s -> ConcurrentHashMap.newKeySet()).add(thread);
     }
@@ -74,18 +73,19 @@ public class ParallelProcessor {
         if (shouldTickSynchronously(entityIn)) {
             tickSynchronously(tickConsumer, entityIn);
         } else {
-            CompletableFuture<Void> task = CompletableFuture.runAsync(
+            CompletableFuture<Void> future = CompletableFuture.runAsync(
                     () -> performAsyncEntityTick(tickConsumer, entityIn),
                     tickPool
             );
-            entityTickFutures.add(task);
+            taskQueue.add(future);
         }
     }
 
     private static boolean shouldTickSynchronously(Entity entity) {
-        return AsyncConfig.disabled ||
-                blacklistedEntity.contains(entity.getUuid()) ||
-                specialEntities.contains(entity.getClass()) ||
+        if (AsyncConfig.disabled || blacklistedEntity.contains(entity.getUuid())) {
+            return true;
+        }
+        return specialEntities.contains(entity.getClass()) ||
                 tickPortalSynchronously(entity) ||
                 entity instanceof AbstractMinecartEntity ||
                 (AsyncConfig.disableTNT && entity instanceof TntEntity);
@@ -126,14 +126,14 @@ public class ParallelProcessor {
         if (!AsyncConfig.disabled) {
             try {
                 CompletableFuture<Void> allTasks = CompletableFuture
-                        .allOf(entityTickFutures.toArray(new CompletableFuture[0]))
+                        .allOf(taskQueue.toArray(new CompletableFuture[0]))
                         .orTimeout(5, TimeUnit.MINUTES);
                 allTasks.join();
             } catch (CompletionException e) {
                 LOGGER.error("Critical error during entity tick processing", e);
                 server.shutdown();
             } finally {
-                entityTickFutures.clear();
+                taskQueue.clear();
             }
         }
     }
