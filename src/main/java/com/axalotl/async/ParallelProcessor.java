@@ -1,7 +1,6 @@
 package com.axalotl.async;
 
 import com.axalotl.async.config.AsyncConfig;
-import com.axalotl.async.parallelised.ExecutorManager;
 import lombok.Getter;
 import lombok.Setter;
 import net.minecraft.entity.Entity;
@@ -28,9 +27,8 @@ public class ParallelProcessor {
     public static AtomicInteger currentEnts = new AtomicInteger();
     private static final AtomicInteger ThreadPoolID = new AtomicInteger();
     public static ExecutorService tickPool;
-//    public static final Queue<CompletableFuture<Void>> entityTickFutures = new ConcurrentLinkedQueue<>();
-    public static ExecutorManager manager;
-    public static final Set<Class<?>> blacklistedClasses = ConcurrentHashMap.newKeySet();
+    public static final Queue<CompletableFuture<Void>> entityTickFutures = new ConcurrentLinkedQueue<>();
+    public static final Set<UUID> blacklistedEntity = ConcurrentHashMap.newKeySet();
     private static final Map<String, Set<Thread>> mcThreadTracker = new ConcurrentHashMap<>();
     private static final Set<Class<?>> specialEntities = Set.of(
             FallingBlockEntity.class,
@@ -39,29 +37,24 @@ public class ParallelProcessor {
     );
 
     public static void setupThreadPool(int parallelism) {
-        manager = new ExecutorManager(parallelism, thread -> {
-            thread.setDaemon(true);
-            regThread("Async-Tick", thread);
-            thread.setName("Async-Tick-Pool-Thread--%d".formatted(ThreadPoolID.getAndIncrement()));
-        });
-//        if (AsyncConfig.virtualThreads) {
-//            ThreadFactory factory = Thread.ofVirtual()
-//                    .name("Async-Tick-Pool-Thread-", 1)
-//                    .uncaughtExceptionHandler((thread, throwable) ->
-//                            LOGGER.error("Uncaught exception in virtual thread {}: {}", thread.getName(), throwable))
-//                    .factory();
-//            tickPool = Executors.newThreadPerTaskExecutor(factory);
-//        } else {
-//            ForkJoinPool.ForkJoinWorkerThreadFactory tickThreadFactory = p -> {
-//                ForkJoinWorkerThread factory = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(p);
-//                factory.setName("Async-Tick-Pool-Thread-" + ThreadPoolID.getAndIncrement());
-//                regThread("Async-Tick", factory);
-//                factory.setDaemon(true);
-//                factory.setContextClassLoader(Async.class.getClassLoader());
-//                return factory;
-//            };
-//            tickPool = new ForkJoinPool(parallelism, tickThreadFactory, (t, e) -> LOGGER.error("Uncaught exception in thread {}: {}", t.getName(), e), true);
-//        }
+        if (AsyncConfig.virtualThreads) {
+            ThreadFactory factory = Thread.ofVirtual()
+                    .name("Async-Tick-Pool-Thread-", 1)
+                    .uncaughtExceptionHandler((thread, throwable) ->
+                            LOGGER.error("Uncaught exception in virtual thread {}: {}", thread.getName(), throwable))
+                    .factory();
+            tickPool = Executors.newThreadPerTaskExecutor(factory);
+        } else {
+            ForkJoinPool.ForkJoinWorkerThreadFactory tickThreadFactory = p -> {
+                ForkJoinWorkerThread factory = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(p);
+                factory.setName("Async-Tick-Pool-Thread-" + ThreadPoolID.getAndIncrement());
+                regThread("Async-Tick", factory);
+                factory.setDaemon(true);
+                factory.setContextClassLoader(Async.class.getClassLoader());
+                return factory;
+            };
+            tickPool = new ForkJoinPool(parallelism, tickThreadFactory, (t, e) -> LOGGER.error("Uncaught exception in thread {}: {}", t.getName(), e), true);
+        }
     }
 
 
@@ -81,18 +74,17 @@ public class ParallelProcessor {
         if (shouldTickSynchronously(entityIn)) {
             tickSynchronously(tickConsumer, entityIn);
         } else {
-//            CompletableFuture<Void> task = CompletableFuture.runAsync(
-//                    () -> performAsyncEntityTick(tickConsumer, entityIn),
-//                    tickPool
-//            );
-//            entityTickFutures.add(task);
-            manager.schedule(() -> performAsyncEntityTick(tickConsumer, entityIn), 19);
+            CompletableFuture<Void> task = CompletableFuture.runAsync(
+                    () -> performAsyncEntityTick(tickConsumer, entityIn),
+                    tickPool
+            );
+            entityTickFutures.add(task);
         }
     }
 
     private static boolean shouldTickSynchronously(Entity entity) {
         return AsyncConfig.disabled ||
-                blacklistedClasses.contains(entity.getClass()) ||
+                blacklistedEntity.contains(entity.getUuid()) ||
                 specialEntities.contains(entity.getClass()) ||
                 tickPortalSynchronously(entity) ||
                 entity instanceof AbstractMinecartEntity ||
@@ -123,7 +115,7 @@ public class ParallelProcessor {
                 tickConsumer.accept(entity);
             } catch (Exception e) {
                 LOGGER.error("Error ticking entity {} asynchronously", entity.getType().getName(), e);
-                blacklistedClasses.add(entity.getClass());
+                blacklistedEntity.add(entity.getUuid());
             } finally {
                 currentEnts.decrementAndGet();
             }
@@ -131,19 +123,19 @@ public class ParallelProcessor {
 
 
     public static void postEntityTick() {
-//        if (!AsyncConfig.disabled) {
-//            try {
-//                CompletableFuture<Void> allTasks = CompletableFuture
-//                        .allOf(entityTickFutures.toArray(new CompletableFuture[0]))
-//                        .orTimeout(5, TimeUnit.MINUTES);
-//                allTasks.join();
-//            } catch (CompletionException e) {
-//                LOGGER.error("Critical error during entity tick processing", e);
-//                server.shutdown();
-//            } finally {
-//                entityTickFutures.clear();
-//            }
-//        }
+        if (!AsyncConfig.disabled) {
+            try {
+                CompletableFuture<Void> allTasks = CompletableFuture
+                        .allOf(entityTickFutures.toArray(new CompletableFuture[0]))
+                        .orTimeout(5, TimeUnit.MINUTES);
+                allTasks.join();
+            } catch (CompletionException e) {
+                LOGGER.error("Critical error during entity tick processing", e);
+                server.shutdown();
+            } finally {
+                entityTickFutures.clear();
+            }
+        }
     }
 
     public static void stop() {
