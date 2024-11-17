@@ -73,13 +73,13 @@ public class ParallelProcessor {
     public static void callEntityTick(Consumer<Entity> tickConsumer, Entity entityIn) {
         if (shouldTickSynchronously(entityIn)) {
             tickSynchronously(tickConsumer, entityIn);
-            return;
+        } else {
+            CompletableFuture<Void> task = CompletableFuture.runAsync(
+                    () -> performAsyncEntityTick(tickConsumer, entityIn),
+                    tickPool
+            );
+            entityTickFutures.add(task);
         }
-        CompletableFuture<Void> future = CompletableFuture.runAsync(
-                () -> performAsyncEntityTick(tickConsumer, entityIn),
-                tickPool
-        );
-        entityTickFutures.add(future);
     }
 
     private static boolean shouldTickSynchronously(Entity entity) {
@@ -110,18 +110,17 @@ public class ParallelProcessor {
     }
 
     private static void performAsyncEntityTick(Consumer<Entity> tickConsumer, Entity entity) {
-        try {
-            currentEnts.incrementAndGet();
-            tickConsumer.accept(entity);
-        } catch (Exception e) {
-            LOGGER.error("Error ticking entity {} asynchronously",
-                    entity.getType().getName(),
-                    e);
-            blacklistedClasses.add(entity.getClass());
-        } finally {
-            currentEnts.decrementAndGet();
-        }
+            try {
+                currentEnts.incrementAndGet();
+                tickConsumer.accept(entity);
+            } catch (Exception e) {
+                LOGGER.error("Error ticking entity {} asynchronously", entity.getType().getName(), e);
+                blacklistedClasses.add(entity.getClass());
+            } finally {
+                currentEnts.decrementAndGet();
+            }
     }
+
 
     public static void postEntityTick() {
         if (!AsyncConfig.disabled) {
