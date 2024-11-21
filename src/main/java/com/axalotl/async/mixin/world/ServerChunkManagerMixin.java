@@ -31,8 +31,6 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
     @Final
     public ServerChunkLoadingManager chunkLoadingManager;
 
-    @Shadow @Final public ServerChunkManager.MainThreadExecutor mainThreadExecutor;
-
     @Redirect(method = {"getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", "getWorldChunk"}, at = @At(value = "FIELD", target = "Lnet/minecraft/server/world/ServerChunkManager;serverThread:Ljava/lang/Thread;", opcode = Opcodes.GETFIELD))
     private Thread overwriteServerThread(ServerChunkManager mgr) {
         return Thread.currentThread();
@@ -46,7 +44,6 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
     @Inject(method = "getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", at = @At("HEAD"), cancellable = true)
     private void shortcutGetChunk(int x, int z, ChunkStatus leastStatus, boolean create, CallbackInfoReturnable<Chunk> cir) {
         if (Thread.currentThread() != this.serverThread) {
-            mainThreadExecutor.execute(()->{
                 final ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(x, z));
                 if (holder != null) {
                     final CompletableFuture<OptionalChunk<Chunk>> future = holder.load(leastStatus, this.chunkLoadingManager);
@@ -56,7 +53,6 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
                         cir.setReturnValue(chunk);
                     }
                 }
-            });
         }
     }
 }
