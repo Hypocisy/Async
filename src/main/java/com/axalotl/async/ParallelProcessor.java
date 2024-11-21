@@ -77,7 +77,7 @@ public class ParallelProcessor {
                     () -> performAsyncEntityTick(tickConsumer, entity),
                     tickPool
             ).exceptionally(e -> {
-                LOGGER.error("Error ticking entity {} asynchronously", entity.getType().getName(), e);
+                LOGGER.error("Error ticking entity {} asynchronously, switching to synchronous processing", entity.getType().getName(), e);
                 tickSynchronously(tickConsumer, entity);
                 blacklistedEntity.add(entity.getUuid());
                 return null;
