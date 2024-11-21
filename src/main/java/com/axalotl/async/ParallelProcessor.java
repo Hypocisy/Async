@@ -24,13 +24,13 @@ public class ParallelProcessor {
     @Getter
     @Setter
     public static MinecraftServer server;
-    public static AtomicInteger currentEnts = new AtomicInteger();
+    public static AtomicInteger currentEntities = new AtomicInteger();
     private static final AtomicInteger ThreadPoolID = new AtomicInteger();
-    public static ExecutorService tickPool;
-    public static final Queue<CompletableFuture<Void>> taskQueue = new ConcurrentLinkedQueue<>();
+    private static ExecutorService tickPool;
+    private static final Queue<CompletableFuture<Void>> taskQueue = new ConcurrentLinkedQueue<>();
     public static final Set<UUID> blacklistedEntity = ConcurrentHashMap.newKeySet();
     private static final Map<String, Set<Thread>> mcThreadTracker = new ConcurrentHashMap<>();
-    private static final Set<Class<?>> specialEntities = Set.of(
+    public static final Set<Class<?>> specialEntities = Set.of(
             FallingBlockEntity.class,
             PlayerEntity.class,
             ServerPlayerEntity.class
@@ -69,14 +69,19 @@ public class ParallelProcessor {
         return isThreadPooled("Async-Tick", Thread.currentThread());
     }
 
-    public static void callEntityTick(Consumer<Entity> tickConsumer, Entity entityIn) {
-        if (shouldTickSynchronously(entityIn)) {
-            tickSynchronously(tickConsumer, entityIn);
+    public static void callEntityTick(Consumer<Entity> tickConsumer, Entity entity) {
+        if (shouldTickSynchronously(entity)) {
+            tickSynchronously(tickConsumer, entity);
         } else {
             CompletableFuture<Void> future = CompletableFuture.runAsync(
-                    () -> performAsyncEntityTick(tickConsumer, entityIn),
+                    () -> performAsyncEntityTick(tickConsumer, entity),
                     tickPool
-            );
+            ).exceptionally(e -> {
+                LOGGER.error("Error ticking entity {} asynchronously", entity.getType().getName(), e);
+                tickSynchronously(tickConsumer, entity);
+                blacklistedEntity.add(entity.getUuid());
+                return null;
+            });
             taskQueue.add(future);
         }
     }
@@ -111,29 +116,24 @@ public class ParallelProcessor {
 
     private static void performAsyncEntityTick(Consumer<Entity> tickConsumer, Entity entity) {
             try {
-                currentEnts.incrementAndGet();
+                currentEntities.incrementAndGet();
                 tickConsumer.accept(entity);
-            } catch (Exception e) {
-                LOGGER.error("Error ticking entity {} asynchronously", entity.getType().getName(), e);
-                blacklistedEntity.add(entity.getUuid());
             } finally {
-                currentEnts.decrementAndGet();
+                currentEntities.decrementAndGet();
             }
     }
 
 
     public static void postEntityTick() {
         if (!AsyncConfig.disabled) {
+            List<CompletableFuture<Void>> futuresList = new ArrayList<>(taskQueue);
+            taskQueue.clear();
+            CompletableFuture<Void> allTasks = CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]));
             try {
-                CompletableFuture<Void> allTasks = CompletableFuture
-                        .allOf(taskQueue.toArray(new CompletableFuture[0]))
-                        .orTimeout(5, TimeUnit.MINUTES);
                 allTasks.join();
             } catch (CompletionException e) {
                 LOGGER.error("Critical error during entity tick processing", e);
                 server.shutdown();
-            } finally {
-                taskQueue.clear();
             }
         }
     }
