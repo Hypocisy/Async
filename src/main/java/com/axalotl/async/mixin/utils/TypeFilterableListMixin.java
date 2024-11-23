@@ -24,7 +24,7 @@ public abstract class TypeFilterableListMixin<T> extends AbstractCollection<T> {
     private List<T> allElements = new CopyOnWriteArrayList<>();
 
     @ModifyArg(method = "method_15217", at = @At(value = "INVOKE", target = "Ljava/util/stream/Stream;collect(Ljava/util/stream/Collector;)Ljava/lang/Object;"))
-    private <T> Collector<T, ?, List<T>> overwriteCollectToList(Collector<T, ?, List<T>> collector) {
+    private Collector<T, ?, List<T>> overwriteCollectToList(Collector<T, ?, List<T>> collector) {
         return ConcurrentCollections.toList();
     }
 }

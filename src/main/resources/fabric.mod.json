@@ -40,6 +40,7 @@
   },
   "custom": {
     "lithium:options": {
+      "util.entity_movement_tracking": false,
       "entity.inactive_navigations": false,
       "chunk.entity_class_groups": false,
       "world.chunk_access": false
