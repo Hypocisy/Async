@@ -58,7 +58,7 @@ public class ParallelProcessor {
     }
 
     public static void regThread(String poolName, Thread thread) {
-        mcThreadTracker.computeIfAbsent(poolName, _ -> ConcurrentHashMap.newKeySet()).add(thread);
+        mcThreadTracker.computeIfAbsent(poolName, s -> ConcurrentHashMap.newKeySet()).add(thread);
     }
 
     public static boolean isThreadPooled(String poolName, Thread t) {

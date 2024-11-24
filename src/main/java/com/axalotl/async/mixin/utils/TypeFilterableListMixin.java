@@ -18,7 +18,7 @@ public abstract class TypeFilterableListMixin<T> extends AbstractCollection<T> {
     @Mutable
     private Map<Class<?>, List<T>> elementsByType = new ConcurrentHashMap<>();
 
-    @Shadowvv
+    @Shadow
     @Final
     @Mutable
     private List<T> allElements = new CopyOnWriteArrayList<>();
