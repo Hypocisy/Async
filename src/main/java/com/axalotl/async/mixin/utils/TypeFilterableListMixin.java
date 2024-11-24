@@ -11,14 +11,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collector;
 
-@Mixin(value = TypeFilterableList.class)
+@Mixin(value = TypeFilterableList.class, priority = 1500)
 public abstract class TypeFilterableListMixin<T> extends AbstractCollection<T> {
     @Shadow
     @Final
     @Mutable
     private Map<Class<?>, List<T>> elementsByType = new ConcurrentHashMap<>();
 
-    @Shadow
+    @Shadowvv
     @Final
     @Mutable
     private List<T> allElements = new CopyOnWriteArrayList<>();
