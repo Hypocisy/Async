@@ -58,7 +58,7 @@ public class ParallelProcessor {
     }
 
     public static void regThread(String poolName, Thread thread) {
-        mcThreadTracker.computeIfAbsent(poolName, s -> ConcurrentHashMap.newKeySet()).add(thread);
+        mcThreadTracker.computeIfAbsent(poolName, _ -> ConcurrentHashMap.newKeySet()).add(thread);
     }
 
     public static boolean isThreadPooled(String poolName, Thread t) {
@@ -126,14 +126,15 @@ public class ParallelProcessor {
 
     public static void postEntityTick() {
         if (!AsyncConfig.disabled) {
-            List<CompletableFuture<Void>> futuresList = new ArrayList<>(taskQueue);
-            taskQueue.clear();
-            CompletableFuture<Void> allTasks = CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]));
             try {
+                List<CompletableFuture<Void>> futuresList = new ArrayList<>(taskQueue);
+                CompletableFuture<Void> allTasks = CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]));
                 allTasks.join();
             } catch (CompletionException e) {
                 LOGGER.error("Critical error during entity tick processing", e);
                 server.shutdown();
+            } finally {
+                taskQueue.clear();
             }
         }
     }

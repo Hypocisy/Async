@@ -44,15 +44,15 @@ public abstract class ServerChunkManagerMixin extends ChunkManager {
     @Inject(method = "getChunk(IILnet/minecraft/world/chunk/ChunkStatus;Z)Lnet/minecraft/world/chunk/Chunk;", at = @At("HEAD"), cancellable = true)
     private void shortcutGetChunk(int x, int z, ChunkStatus leastStatus, boolean create, CallbackInfoReturnable<Chunk> cir) {
         if (Thread.currentThread() != this.serverThread) {
-                final ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(x, z));
-                if (holder != null) {
-                    final CompletableFuture<OptionalChunk<Chunk>> future = holder.load(leastStatus, this.chunkLoadingManager);
-                    Chunk chunk = future.getNow(ChunkHolder.UNLOADED).orElse(null);
-                    if (chunk instanceof WrapperProtoChunk readOnlyChunk) chunk = readOnlyChunk.getWrappedChunk();
-                    if (chunk != null) {
-                        cir.setReturnValue(chunk);
-                    }
+            final ChunkHolder holder = this.getChunkHolder(ChunkPos.toLong(x, z));
+            if (holder != null) {
+                final CompletableFuture<OptionalChunk<Chunk>> future = holder.load(leastStatus, this.chunkLoadingManager);
+                Chunk chunk = future.getNow(ChunkHolder.UNLOADED).orElse(null);
+                if (chunk instanceof WrapperProtoChunk readOnlyChunk) chunk = readOnlyChunk.getWrappedChunk();
+                if (chunk != null) {
+                    cir.setReturnValue(chunk);
                 }
+            }
         }
     }
 }
