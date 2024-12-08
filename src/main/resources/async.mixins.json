@@ -40,8 +40,6 @@
     "world.ChainRestrictedNeighborUpdaterMixin",
     "world.ChunkHolderMixin",
     "world.ChunkTicketManagerMixin",
-    "world.LevelPropagatorMixin",
-    "world.PendingUpdateQueueMixin",
     "world.SerializingRegionBasedStorageMixin",
     "world.ServerChunkLoadingManagerMixin",
     "world.ServerChunkManagerMixin",
