@@ -26,7 +26,7 @@
     "entity.PlayWithVillagerBabiesTaskMixin",
     "entity.RaiderEntityMixin",
     "entity.SectionedEntityCacheMixin",
-    "entity.ServerEntityManagerMixin",
+    "entity.ServerEntityManagerListenerMixin",
     "entity.ServerPlayerEntityMixin",
     "entity.VillagerGossipsMixin",
     "server.DedicatedServerWatchdogMixin",

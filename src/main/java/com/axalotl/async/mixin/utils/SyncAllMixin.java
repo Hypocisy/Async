@@ -4,9 +4,12 @@ import net.minecraft.advancement.criterion.AbstractCriterion;
 import net.minecraft.entity.ai.WardenAngerManager;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.PathMinHeap;
+import net.minecraft.entity.ai.pathing.PathNodeNavigator;
+import net.minecraft.server.world.ServerEntityManager;
 import net.minecraft.util.math.random.CheckedRandom;
 import net.minecraft.world.border.WorldBorder;
 import net.minecraft.world.chunk.light.LevelPropagator;
+import net.minecraft.world.entity.EntityTrackingSection;
 import net.minecraft.world.event.listener.SimpleGameEventDispatcher;
 import net.minecraft.world.tick.ChunkTickScheduler;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +24,8 @@ import org.spongepowered.asm.mixin.Mixin;
         SimpleGameEventDispatcher.class,
         AbstractCriterion.class,
         WardenAngerManager.class,
-        WorldBorder.class
+        WorldBorder.class,
+        EntityTrackingSection.class
 })
 public class SyncAllMixin {
 }
