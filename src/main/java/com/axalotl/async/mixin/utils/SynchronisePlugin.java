@@ -42,7 +42,8 @@ public class SynchronisePlugin implements IMixinConfigPlugin {
                 "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntrySet",
                 "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$EntryIterator",
                 "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapIterator",
-                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntry"
+                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntry",
+                "it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap"
         ));
     }
 
