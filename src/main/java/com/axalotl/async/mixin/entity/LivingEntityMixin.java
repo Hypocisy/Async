@@ -20,4 +20,9 @@ public abstract class LivingEntityMixin extends Entity {
     private synchronized void onDeath(DamageSource damageSource, Operation<Void> original) {
         original.call(damageSource);
     }
+
+    @WrapMethod(method = "dropLoot")
+    private synchronized void dropLoot(DamageSource damageSource, boolean causedByPlayer, Operation<Void> original) {
+        original.call(damageSource, causedByPlayer);
+    }
 }
