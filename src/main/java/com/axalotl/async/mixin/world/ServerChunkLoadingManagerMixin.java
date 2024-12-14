@@ -60,7 +60,6 @@ public abstract class ServerChunkLoadingManagerMixin extends VersionedChunkStora
 
     @Inject(method = "loadEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/Util;throwOrPause(Ljava/lang/Throwable;)Ljava/lang/Throwable;"), cancellable = true)
     private void skipThrowLoadEntity(Entity entity, CallbackInfo ci) {
-        this.entityTrackers.remove(entity.getId());
         ci.cancel();
     }
 }

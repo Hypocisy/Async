@@ -35,11 +35,11 @@ public abstract class EntityIndexMixin<T extends EntityLike> {
         uuidToEntity = ConcurrentCollections.newHashMap();
     }
 
-    @Inject(method = "add", at = @At(value = "INVOKE", target = "Ljava/util/Map;containsKey(Ljava/lang/Object;)Z"), cancellable = true)
-    private void skipWarn(T entity, CallbackInfo ci) {
-        if (idToEntity.containsKey(entity.getId())) {
-            uuidToEntity.remove(entity.getUuid());
-            ci.cancel();
-        }
-    }
+//    @Inject(method = "add", at = @At(value = "INVOKE", target = "Ljava/util/Map;containsKey(Ljava/lang/Object;)Z"), cancellable = true)
+//    private void skipWarn(T entity, CallbackInfo ci) {
+//        if (idToEntity.containsKey(entity.getId())) {
+//            uuidToEntity.remove(entity.getUuid());
+//            ci.cancel();
+//        }
+//    }
 }
