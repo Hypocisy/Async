@@ -4,7 +4,6 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerEntityManager;
-import net.minecraft.world.entity.EntityTrackingStatus;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -26,13 +25,6 @@ public abstract class ServerEntityManagerListenerMixin implements AutoCloseable 
     private void remove(Entity.RemovalReason reason, Operation<Void> original) {
         synchronized (lock) {
             original.call(reason);
-        }
-    }
-
-    @WrapMethod(method = "updateLoadStatus")
-    private void remove(EntityTrackingStatus oldStatus, EntityTrackingStatus newStatus, Operation<Void> original) {
-        synchronized (lock) {
-            original.call(oldStatus, newStatus);
         }
     }
 }
