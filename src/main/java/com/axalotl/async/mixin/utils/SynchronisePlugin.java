@@ -34,16 +34,7 @@ public class SynchronisePlugin implements IMixinConfigPlugin {
 
         syncAllClasses.addAll(List.of(
                 "com.axalotl.async.mixin.utils.FastUtilsMixin",
-                "com.axalotl.async.mixin.utils.SyncAllMixin",
-                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap",
-                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$ValueIterator",
-                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$KeySet",
-                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$KeyIterator",
-                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntrySet",
-                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$EntryIterator",
-                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapIterator",
-                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntry",
-                "it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap"
+                "com.axalotl.async.mixin.utils.SyncAllMixin"
         ));
     }
 
