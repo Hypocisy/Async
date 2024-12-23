@@ -40,10 +40,5 @@ public abstract class MinecraftServerMixin extends ReentrantThreadExecutor<Serve
         }
         return getThreadThread == serverThread;
     }
-
-    @Inject(method = "tick", at = @At("HEAD"))
-    private void getServerObject(BooleanSupplier shouldKeepTicking, CallbackInfo ci) {
-        ParallelProcessor.setServer((MinecraftServer) (Object) this);
-    }
 }
 
