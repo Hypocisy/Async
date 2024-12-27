@@ -3,6 +3,7 @@ package com.axalotl.async.mixin.entity;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.entity.*;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -30,6 +31,13 @@ public abstract class ItemEntityMixin extends Entity {
     public void move(MovementType movementType, Vec3d movement) {
         synchronized (lock) {
             super.move(movementType, movement);
+        }
+    }
+
+    @WrapMethod(method = "onPlayerCollision")
+    private void onPlayerCollision(PlayerEntity player, Operation<Void> original) {
+        synchronized (lock) {
+            original.call(player);
         }
     }
 }
