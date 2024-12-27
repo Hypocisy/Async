@@ -18,6 +18,7 @@ import java.util.stream.Collector;
 public abstract class TypeFilterableListMixin<T> extends AbstractCollection<T> {
     @Unique
     private static final ReentrantLock lock = new ReentrantLock();
+
     @Shadow
     private final Map<Class<?>, List<T>> elementsByType = new ConcurrentHashMap<>();
 
@@ -44,7 +45,7 @@ public abstract class TypeFilterableListMixin<T> extends AbstractCollection<T> {
     }
 
     @WrapMethod(method = "getAllOfType")
-    private synchronized <S extends T> Collection<S> getAllOfType(Class<S> type, Operation<Collection<S>> original) {
+    private <S extends T> Collection<S> getAllOfType(Class<S> type, Operation<Collection<S>> original) {
         synchronized (lock) {
             return original.call(type);
         }

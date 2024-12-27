@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.Mixin;
         ReferenceArrayList.class,
         Object2ReferenceOpenCustomHashMap.class,
         Reference2ByteOpenHashMap.class,
-        Reference2LongOpenHashMap.class,
+        Reference2LongOpenHashMap.class
 },
         targets = {
                 "it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap$FastEntryIterator",
@@ -46,6 +46,7 @@ import org.spongepowered.asm.mixin.Mixin;
                 "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$KeyIterator",
                 "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapEntrySet",
                 "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$EntryIterator",
+                "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapIterator",
                 "it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap$MapIterator",
                 "it.unimi.dsi.fastutil.objects.Reference2ByteOpenHashMap",
                 "it.unimi.dsi.fastutil.objects.Reference2LongOpenHashMap"
