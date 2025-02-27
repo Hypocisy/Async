@@ -15,19 +15,19 @@ public class VillagerMixin {
     @Unique
     private static final ReentrantLock async$lock = new ReentrantLock();
 
-    @WrapMethod(method = "pickUpItem")
-    private void pickUpItem(ItemEntity itemEntity, Operation<Void> original) {
-        synchronized (async$lock) {
-            if (!itemEntity.isRemoved()) {
-                original.call(itemEntity);
-            }
-        }
-    }
+	@WrapMethod(method = "pickUpItem")
+	private void pickUpItem(ItemEntity itemEntity, Operation<Void> original) {
+		synchronized (async$lock) {
+			if (!itemEntity.isRemoved()) {
+				original.call(itemEntity);
+			}
+		}
+	}
 
-    @WrapMethod(method = "spawnGolemIfNeeded")
-    private void spawnGolemIfNeeded(ServerLevel world, long time, int requiredCount, Operation<Void> original) {
-        synchronized (async$lock) {
-            original.call(world, time, requiredCount);
-        }
-    }
+	@WrapMethod(method = "spawnGolemIfNeeded")
+	private void spawnGolemIfNeeded(ServerLevel world, long time, int requiredCount, Operation<Void> original) {
+		synchronized (async$lock) {
+			original.call(world, time, requiredCount);
+		}
+	}
 }

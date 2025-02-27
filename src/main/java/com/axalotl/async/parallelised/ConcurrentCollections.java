@@ -18,8 +18,6 @@ import java.util.stream.Collectors;
  * Provides convenient methods to create concurrent collections with standard interfaces.
  */
 public class ConcurrentCollections {
-    public ConcurrentCollections() {
-    }
 
     /**
      * Creates a new thread-safe set

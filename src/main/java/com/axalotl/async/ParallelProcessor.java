@@ -11,6 +11,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,19 +40,22 @@ public class ParallelProcessor {
     );
 
     public static void setupThreadPool(int parallelism) {
-        ForkJoinPool.ForkJoinWorkerThreadFactory tickThreadFactory = p -> {
-            ForkJoinWorkerThread factory = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(p);
-            factory.setName("Async-Tick-Pool-Thread-%d".formatted(ThreadPoolID.getAndIncrement()));
-            regThread("Async-Tick", factory);
-            factory.setDaemon(true);
-            factory.setContextClassLoader(Async.class.getClassLoader());
-            return factory;
+        ForkJoinPool.ForkJoinWorkerThreadFactory threadFactory = pool -> {
+            ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+            worker.setName("Async-Tick-Pool-Thread-" + ThreadPoolID.getAndIncrement());
+            registerThread("Async-Tick", worker);
+            worker.setDaemon(true);
+            worker.setPriority(Thread.NORM_PRIORITY);
+            worker.setContextClassLoader(Async.class.getClassLoader());
+            return worker;
         };
-        tickPool = new ForkJoinPool(parallelism, tickThreadFactory, (t, e) -> LOGGER.error("Uncaught exception in thread {}: {}", t.getName(), e), true);
-        LOGGER.info("Initialized ForkJoinPool with {} threads", parallelism);
+
+        tickPool = new ForkJoinPool(parallelism, threadFactory, (t, e) ->
+                LOGGER.error("Uncaught exception in thread {}: {}", t.getName(), e), true);
+        LOGGER.info("Initialized Pool with {} threads", parallelism);
     }
 
-    public static void regThread(String poolName, Thread thread) {
+    public static void registerThread(String poolName, Thread thread) {
         mcThreadTracker.computeIfAbsent(poolName, s -> ConcurrentHashMap.newKeySet()).add(thread);
     }
 
@@ -82,6 +86,8 @@ public class ParallelProcessor {
 
     public static boolean shouldTickSynchronously(Entity entity) {
         return AsyncConfig.disabled
+		        || entity instanceof Projectile
+		        || entity instanceof AbstractMinecart
                 || tickPortalSynchronously(entity)
                 || entity.hasExactlyOnePlayerPassenger()
 
@@ -120,7 +126,7 @@ public class ParallelProcessor {
             try {
                 List<CompletableFuture<Void>> futuresList = new ArrayList<>(taskQueue);
                 CompletableFuture<Void> allTasks = CompletableFuture.allOf(futuresList.toArray(new CompletableFuture[0]));
-                allTasks.orTimeout(60, TimeUnit.SECONDS).exceptionally(ex -> {
+                allTasks.orTimeout(120, TimeUnit.SECONDS).exceptionally(ex -> {
                     LOGGER.error("Timeout during entity tick processing", ex);
                     server.stopServer();
                     return null;

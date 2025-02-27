@@ -12,12 +12,12 @@ import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(ServerPlayer.class)
 public abstract class ServerPlayerMixin extends Player {
-    public ServerPlayerMixin(Level world, BlockPos pos, float yaw, GameProfile gameProfile) {
-        super(world, pos, yaw, gameProfile);
-    }
+	public ServerPlayerMixin(Level world, BlockPos pos, float yaw, GameProfile gameProfile) {
+		super(world, pos, yaw, gameProfile);
+	}
 
-    @WrapMethod(method = "die")
-    private synchronized void die(DamageSource damageSource, Operation<Void> original) {
-        original.call(damageSource);
-    }
+	@WrapMethod(method = "die")
+	private synchronized void die(DamageSource damageSource, Operation<Void> original) {
+		original.call(damageSource);
+	}
 }

@@ -1,5 +1,7 @@
 package com.axalotl.async.mixin.world;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.level.ChunkResult;
@@ -62,5 +64,9 @@ public abstract class ServerChunkCacheMixin extends ChunkSource {
                 }
             }
         }
+    }
+    @WrapMethod(method = "storeInCache")
+    private synchronized void syncPutInCache(long pos, ChunkAccess chunk, ChunkStatus status, Operation<Void> original) {
+        original.call(pos, chunk, status);
     }
 }
